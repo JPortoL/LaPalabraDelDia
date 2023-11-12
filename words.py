@@ -511,7 +511,6 @@ Palabras5 = [
 "aleja",
 "aleja",
 "algas",
-"alhaju",
 "alias",
 "almas",
 "alojo",

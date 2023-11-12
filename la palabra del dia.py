@@ -1,7 +1,7 @@
 import pygame
 import sys
 import random
-from words import *
+from WORDS import *
 
 pygame.init()
 
@@ -180,7 +180,7 @@ def reset():
     SCREEN.fill("white")
     SCREEN.blit(BACKGROUND, BACKGROUND_RECT)
     guesses_count = 0
-    CORRECT_WORD = random.choice(WORDS)
+    CORRECT_WORD = random.choice(Palabras5)
     guesses = [[]] * 6
     current_guess = []
     current_guess_string = ""
@@ -223,7 +223,7 @@ while True:
                 if game_result != "":
                     reset()
                 else:
-                    if len(current_guess_string) == 5 and current_guess_string.lower() in WORDS:
+                    if len(current_guess_string) == 5 and current_guess_string.lower() in Palabras5:
                         check_guess(current_guess)
             elif event.key == pygame.K_BACKSPACE:
                 if len(current_guess_string) > 0:
