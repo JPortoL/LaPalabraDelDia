@@ -10,13 +10,12 @@ YELLOW = (200, 200, 0)
 BGCOLOUR = DARKGREY
 
 # game settings
-WIDTH = 600
-HEIGHT = 800
+WIDTH = 1000
+HEIGHT = 600
 FPS = 60
 title = "Wordle"
 
 TILESIZE = 80
 GAPSIZE = 10
 
-MARGIN_X = int((WIDTH - (5 * (TILESIZE + GAPSIZE))) / 2)
 MARGIN_Y = int((HEIGHT - (6 * (TILESIZE + GAPSIZE))) / 2)

@@ -1,22 +1,33 @@
+import pygame
 import random
 
-import pygame
-from settings import *
+import words
 from sprites import *
+from settings import *
+from words import *
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, columnas):
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption(title)
         self.clock = pygame.time.Clock()
+        self.columnas = columnas
         self.create_word_list()
-        self.letters_text = UIElement(100, 70, "Not Enough Letters", WHITE)
+        self.fallos = 0
+        self.aciertos = 0
 
     def create_word_list(self):
-        with open("words.txt", "r") as file:
-            self.words_list = file.read().splitlines()
+        options = {
+            4: words.palabras4,
+            5: words.palabras5,
+            6: words.palabras6,
+            7: words.palabras7,
+            8: words.palabras8,
+        }
+        self.words_list = list(options[self.columnas])
+        self.words_set = options[self.columnas]
 
     def new(self):
         self.word = random.choice(self.words_list).upper()
@@ -26,14 +37,17 @@ class Game:
         self.tiles = []
         self.create_tiles()
         self.flip = True
-        self.not_enough_letters = False
         self.timer = 0
+
+    def get_margin_x(self) -> int:
+        return int((WIDTH - (self.columnas * (TILESIZE + GAPSIZE))) / 2)
 
     def create_tiles(self):
         for row in range(6):
             self.tiles.append([])
-            for col in range(5):
-                self.tiles[row].append(Tile((col * (TILESIZE + GAPSIZE)) + MARGIN_X, (row * (TILESIZE + GAPSIZE)) + MARGIN_Y))
+            for col in range(self.columnas):
+                self.tiles[row].append(
+                    Tile((col * (TILESIZE + GAPSIZE)) + self.get_margin_x(), (row * (TILESIZE + GAPSIZE)) + MARGIN_Y))
 
     def run(self):
         self.playing = True
@@ -63,17 +77,6 @@ class Game:
 
     def draw(self):
         self.screen.fill(BGCOLOUR)
-        # display the not enough letters text
-        if self.not_enough_letters:
-            self.timer += 1
-            self.letters_text.fade_in()
-            if self.timer > 90:
-                self.not_enough_letters = False
-                self.timer = 0
-        else:
-            self.letters_text.fade_out()
-        self.letters_text.draw(self.screen)
-
         self.draw_tiles()
 
         pygame.display.flip()
@@ -118,7 +121,7 @@ class Game:
             if tile.letter == "":
                 screen_copy = self.screen.copy()
                 for start, end, step in ((0, 6, 1), (0, -6, -1)):
-                    for size in range(start, end, 2*step):
+                    for size in range(start, end, 2 * step):
                         self.screen.blit(screen_copy, (0, 0))
                         tile.x -= size
                         tile.y -= size
@@ -165,7 +168,6 @@ class Game:
                 break
 
     def check_letters(self):
-        # algorithm to check if the letters inputted correspond to any of the letters in the actual word
         copy_word = [x for x in self.word]
         for i, user_letter in enumerate(self.text):
             colour = LIGHTGREY
@@ -176,7 +178,6 @@ class Game:
                         colour = GREEN
                     copy_word[j] = ""
                     break
-            # reveal animation
             self.reveal_animation(self.tiles[self.current_row][i], colour)
 
     def events(self):
@@ -187,27 +188,28 @@ class Game:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if len(self.text) == 5:
-                        # check all letters
-                        self.check_letters()
+                    if len(self.text) == self.columnas:
+                        if str.lower(self.text) in self.words_set:
+                            # check all letters
+                            self.check_letters()
+                            if self.text == self.word or self.current_row + 1 == 6:
+                                # player lose, lose message is sent
+                                if self.text != self.word:
+                                    self.fallos += 1
+                                # player win, send win message
+                                else:
+                                    self.aciertos += 1
 
-                        # if the text is correct or the player has used all his turns
-                        if self.text == self.word or self.current_row + 1 == 6:
-                            # player lose, lose message is sent
-                            if self.text != self.word:
-                                self.end_screen_text = UIElement(100, 700, f"THE WORD WAS: {self.word}", WHITE)
+                                # restart the game
+                                print(f'FALLOS: {self.fallos} ACIERTOS: {self.aciertos}')
+                                self.playing = False
+                                self.end_screen()
+                                break
 
-                            # player win, send win message
-                            else:
-                                self.end_screen_text = UIElement(100, 700, "YOU GUESSED RIGHT", WHITE)
-
-                            # restart the game
-                            self.playing = False
-                            self.end_screen()
-                            break
-
-                        self.current_row += 1
-                        self.text = ""
+                            self.current_row += 1
+                            self.text = ""
+                        else:
+                            self.row_animation()
 
                     else:
                         # row animation, not enough letters message
@@ -217,12 +219,11 @@ class Game:
                     self.text = self.text[:-1]
 
                 else:
-                    if len(self.text) < 5 and event.unicode.isalpha():
+                    if len(self.text) < self.columnas and event.unicode.isalpha():
                         self.text += event.unicode.upper()
                         self.box_animation()
 
     def end_screen(self):
-        play_again = UIElement(85, 750, "PRESS ENTER TO PLAY AGAIN", WHITE, 30)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -235,14 +236,16 @@ class Game:
 
             self.screen.fill(BGCOLOUR)
             self.draw_tiles()
-            self.end_screen_text.fade_in()
-            self.end_screen_text.draw(self.screen)
-            play_again.fade_in()
-            play_again.draw(self.screen)
             pygame.display.flip()
 
 
-game = Game()
+columnas = 0
+while columnas < 4 or columnas > 8:
+    print('Ingresa la dificultad 4-8')
+    columnas = int(input())
+    print()
+
+game = Game(columnas)
 while True:
     game.new()
     game.run()
