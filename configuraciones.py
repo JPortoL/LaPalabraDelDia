@@ -13,7 +13,7 @@ BGCOLOUR = DARKGREY
 WIDTH = 1000
 HEIGHT = 600
 FPS = 60
-title = "Wordle"
+titulo = "Wordle"
 
 TILESIZE = 80
 GAPSIZE = 10
