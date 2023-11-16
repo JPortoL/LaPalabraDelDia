@@ -375,8 +375,10 @@ class MainMenu:
                     x, y = pygame.mouse.get_pos()
 
                     # Se válida si la posición del mouse está dentro de los botones
+                    # eficiencia 0=num dificuiltades
+
                     for i, difficulty in enumerate([4, 5, 6, 7, 8]):
-                        button_rect = pygame.Rect(300, 100 + i * 50, 200, 40)
+                        button_rect = pygame.Rect(400, 100 + i * 50, 200, 40)
                         if button_rect.collidepoint(x, y):
                             self.selected_difficulty = difficulty
                             # Retorna la dificultad seleccionada
@@ -387,8 +389,8 @@ class MainMenu:
             self.mostrar_puntacion()
             # Se dibujan los botones
             for i, difficulty in enumerate([4, 5, 6, 7, 8]):
-                pygame.draw.rect(self.screen, WHITE, (300, 100 + i * 50, 200, 40))
-                self.draw_text(str(difficulty), self.font, BLACK, 400, 120 + i * 50)
+                pygame.draw.rect(self.screen, WHITE, (400, 100 + i * 50, 200, 40))
+                self.draw_text(str(difficulty), self.font, BLACK, WIDTH // 2, 120 + i * 50)
 
             pygame.display.flip()
             self.clock.tick(30)

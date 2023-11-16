@@ -1,5 +1,6 @@
 
 palabras4 =  {
+'mier',
 'pare',
 'moco',
 'cian',
@@ -2785,6 +2786,7 @@ palabras4 =  {
 
 
 palabras5 = {
+'perez',
 'hilen',
 'volvi',
 'sajia',
@@ -3277,6 +3279,8 @@ palabras5 = {
 'brezo',
 'adido',
 'alele',
+'porto',
+'santi',
 'cuark',
 'lapsa',
 'mango',
@@ -34061,6 +34065,8 @@ palabras6 = {
 
 
 palabras7 = {
+'echavez',
+'alvarez',
 'exceded',
 'chuflar',
 'bolacha',

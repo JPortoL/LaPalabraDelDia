@@ -13,7 +13,7 @@ fallos = 0
 
 # game settings
 WIDTH = 1000
-HEIGHT = 600
+HEIGHT = 800
 FPS = 60
 titulo = "Wordle"
 
