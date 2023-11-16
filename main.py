@@ -14,11 +14,9 @@ class Game:
         pygame.display.set_caption(titulo)
         self.clock = pygame.time.Clock()
 
-        # Se crea la información del juego
-        self.fallos = 0
-        self.aciertos = 0
         self.columnas = columnas
         self.cargar_palabras_del_diccionario()
+
 
     def cargar_palabras_del_diccionario(self):
         """
@@ -120,15 +118,19 @@ class Game:
                             if self.palabra_usuario == self.palabra or self.fila_actual + 1 == 6:
                                 if self.palabra_usuario != self.palabra:
                                     # Se suma un fallo si la palabra es incorrecta
-                                    self.fallos += 1
+                                    global fallos
+                                    fallos += 1
+                                    gano = False
                                 else:
                                     # Se suma un acierto si la palabra es incorrecta
-                                    self.aciertos += 1
+                                    global aciertos
+                                    aciertos += 1
+                                    gano = True
 
                                 # restart the game
-                                print(f'FALLOS: {self.fallos} ACIERTOS: {self.aciertos}')
+                                print(f'FALLOS: {fallos} ACIERTOS: {aciertos}')
                                 self.jugando = False
-                                self.finalizar_pantalla()
+                                self.finalizar_pantalla(gano)
                                 break
 
                             # En caso contrario de que no adivine la palabra o no\
@@ -181,6 +183,20 @@ class Game:
         self.dic_palabra = self.crear_diccionario_palabra()
 
     ### MÉTODOS DE LA INTERFAZ
+    # Función que dibuja el texto en la pantalla
+    def draw_text(self, text, font, color, x, y):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x, y)
+        self.pantalla.blit(text_surface, text_rect)
+
+    def mostrar_puntacion(self):
+        global aciertos
+        global fallos
+        # Agrega la visualización de aciertos y fallos
+        self.draw_text(f'Aciertos: {aciertos}', pygame.font.Font(None, 30), WHITE, WIDTH // 15, 40)
+        self.draw_text(f'Fallos: {fallos}', pygame.font.Font(None, 30), WHITE, WIDTH // 15, 80)
+
     def draw_tiles(self):
         for row in self.celdas:
             for tile in row:
@@ -189,6 +205,7 @@ class Game:
     def draw(self):
         self.pantalla.fill(BGCOLOUR)
         self.draw_tiles()
+        self.mostrar_puntacion()
 
         pygame.display.flip()
 
@@ -292,7 +309,7 @@ class Game:
                 self.flip = True
                 break
 
-    def finalizar_pantalla(self):
+    def finalizar_pantalla(self, gano):
         """
         Se queda esperando hasta que el usuario cierra el juego o\
         preciona enter para continuar jugando.
@@ -308,27 +325,78 @@ class Game:
                         return
 
             self.pantalla.fill(BGCOLOUR)
+            if gano:
+                self.draw_text(f'¡Felicitaciones, Ganaste!', pygame.font.Font(None, 36), WHITE, WIDTH * 0.84, 40)
+                self.draw_text(f'¿Enter para jugar otra?', pygame.font.Font(None, 36), WHITE, WIDTH * 0.84, 80)
+            else:
+                self.draw_text(f'Lee un diccionario, ¡bruto!', pygame.font.Font(None, 30), WHITE, WIDTH * 0.84, 40)
+                self.draw_text(f'Enter para seguir dando pena', pygame.font.Font(None, 30), WHITE, WIDTH * 0.84, 80)
+                self.draw_text(f'Era {self.palabra}', pygame.font.Font(None, 30), WHITE, WIDTH * 0.84, 120)
+            self.mostrar_puntacion()
             self.draw_tiles()
             pygame.display.flip()
 
 
-# Se lee la dificuldad del juego
-# Eficiencia O(1)'
-columnas_input = 0
-while columnas_input < 4 or columnas_input > 8:
-    print('Ingresa la dificultad 4-8')
-    columnas_input = input()
-    try:
-        columnas_input = int(columnas_input)
-    except:
-        columnas_input = 0
-    print()
+class MainMenu:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        pygame.display.set_caption(titulo)
+        self.clock = pygame.time.Clock()
+        self.font = pygame.font.Font(None, 36)
+        self.selected_difficulty = None
 
-# Se crea el juego
-game = Game(columnas_input)
+    # Función que dibuja el texto en la pantalla
+    def draw_text(self, text, font, color, x, y):
+        text_surface = font.render(text, True, color)
+        text_rect = text_surface.get_rect()
+        text_rect.center = (x, y)
+        self.screen.blit(text_surface, text_rect)
+
+    def mostrar_puntacion(self):
+        global aciertos
+        global fallos
+        # Agrega la visualización de aciertos y fallos
+        self.draw_text(f'Aciertos: {aciertos}', pygame.font.Font(None, 30), WHITE, WIDTH // 15, 40)
+        self.draw_text(f'Fallos: {fallos}', pygame.font.Font(None, 30), WHITE, WIDTH // 15, 80)
+
+    # Función que ejecuta el menú principal
+    def run(self):
+        while True:
+            for event in pygame.event.get():
+                # Si se cierra la ventana, se acaba todo
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit(0)
+
+                # Si se presiona el mouse
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # Se obtiene la posición del mouse
+                    x, y = pygame.mouse.get_pos()
+
+                    # Se válida si la posición del mouse está dentro de los botones
+                    for i, difficulty in enumerate([4, 5, 6, 7, 8]):
+                        button_rect = pygame.Rect(300, 100 + i * 50, 200, 40)
+                        if button_rect.collidepoint(x, y):
+                            self.selected_difficulty = difficulty
+                            # Retorna la dificultad seleccionada
+                            return self.selected_difficulty  
+            # Se dibuja el menú principal
+            self.screen.fill(BGCOLOUR)
+            self.draw_text("Seleccione la Dificultad", self.font, WHITE, WIDTH // 2, 50)
+            self.mostrar_puntacion()
+            # Se dibujan los botones
+            for i, difficulty in enumerate([4, 5, 6, 7, 8]):
+                pygame.draw.rect(self.screen, WHITE, (300, 100 + i * 50, 200, 40))
+                self.draw_text(str(difficulty), self.font, BLACK, 400, 120 + i * 50)
+
+            pygame.display.flip()
+            self.clock.tick(30)
+
 while True:
-    # Se crea el tablero
-    game.crear_tablero()
+    main_menu = MainMenu()
+    columnas_seleccionadas = main_menu.run()
 
-    # Se ejecuta el juego
+    game = Game(columnas_seleccionadas)
+    game.crear_tablero()
     game.ejecutar_juego()
